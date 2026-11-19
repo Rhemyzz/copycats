@@ -230,13 +230,14 @@ public class CCBlocks {
                     .transform(CCBuilderTransformers.multiCopycat())
                     .transform(FeatureToggle.register(FeatureCategory.MULTISTATES))
                     .onRegister(onClient(() -> createBlockModel(CopycatMultiByteModelCore::new)))
-                    .loot(CCLootGen.build(CCLootGen.lootForBytes()))
+                    .loot(CCLootGen.build(CCLootGen.lootForDirections()))
                     .item()
                     .onRegister(CopycatDescription.register(
                             CopycatCharacteristics.COPYCAT,
                             CopycatCharacteristics.CT_TOGGLE,
                             CopycatCharacteristics.MULTI_STATE
                     ))
+                    .tag(CCTags.Items.COPYCAT_BYTE.tag)
                     .transform(customItemModel("copycat_base", "byte"))
                     .register();
 
