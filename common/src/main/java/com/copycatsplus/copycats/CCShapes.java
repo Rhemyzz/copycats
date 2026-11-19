@@ -32,6 +32,8 @@ public class CCShapes {
 
     public static final Map<Direction, MutableShape> BOARD =
             forDirections(shape(aabb(16, 16, 1).move(0, 0, 15)));
+    public static final Map<Direction, MutableShape> BYTE =
+            forDirections(shape(aabb(16, 16, 1).move(0, 0, 15)));
     public static final Map<Axis, MutableShape> SLAB_BOTTOM =
             forAxes(shape(aabb(16, 16, 8)));
     public static final Map<Axis, MutableShape> SLAB_TOP =
