@@ -2,71 +2,58 @@ package com.copycatsplus.copycats.content.copycat.bytes;
 
 import com.copycatsplus.copycats.foundation.copycat.model.CopycatModelCore;
 import com.copycatsplus.copycats.foundation.copycat.model.assembly.CopycatRenderContext;
-import com.copycatsplus.copycats.foundation.copycat.model.assembly.AssemblyTransform;
+import net.createmod.catnip.data.Iterate;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.copycatsplus.copycats.foundation.copycat.model.assembly.CopycatRenderContext.*;
 import static com.copycatsplus.copycats.foundation.copycat.model.assembly.MutableCullFace.*;
+import static com.copycatsplus.copycats.content.copycat.bytes.CopycatByteBlock.byDirection;
 
 public class CopycatByteModelCore extends CopycatModelCore {
 
+    private static int i(boolean b) {
+        return b ? 1 : 0;
+    }
+
     @Override
     public void emitCopycatQuads(String key, BlockState state, CopycatRenderContext context, BlockState material) {
-        for (CopycatByteBlock.Byte bite : CopycatByteBlock.allBytes) {
-            if (!state.getValue(CopycatByteBlock.byByte(bite))) continue;
+        Map<Direction, Boolean> sides = new HashMap<>();
+        for (Direction direction : Iterate.directions) {
+            sides.put(direction, state.getValue(byDirection(direction)));
+        }
 
-            int offsetX = bite.x() ? 8 : 0;
-            int offsetY = bite.y() ? 8 : 0;
-            int offsetZ = bite.z() ? 8 : 0;
-
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX, offsetY, offsetZ),
-                    aabb(4, 4, 4),
-                    cull(UP | EAST | SOUTH)
-            );
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX + 4, offsetY, offsetZ),
-                    aabb(4, 4, 4).move(12, 0, 0),
-                    cull(UP | WEST | SOUTH)
-            );
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX, offsetY, offsetZ + 4),
-                    aabb(4, 4, 4).move(0, 0, 12),
-                    cull(UP | EAST | NORTH)
-            );
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX + 4, offsetY, offsetZ + 4),
-                    aabb(4, 4, 4).move(12, 0, 12),
-                    cull(UP | WEST | NORTH)
-            );
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX, offsetY + 4, offsetZ),
-                    aabb(4, 4, 4).move(0, 12, 0),
-                    cull(DOWN | EAST | SOUTH)
-            );
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX + 4, offsetY + 4, offsetZ),
-                    aabb(4, 4, 4).move(12, 12, 0),
-                    cull(DOWN | WEST | SOUTH)
-            );
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX, offsetY + 4, offsetZ + 4),
-                    aabb(4, 4, 4).move(0, 12, 12),
-                    cull(DOWN | EAST | NORTH)
-            );
-            context.assemblePiece(
-                    AssemblyTransform.IDENTITY,
-                    vec3(offsetX + 4, offsetY + 4, offsetZ + 4),
-                    aabb(4, 4, 4).move(12, 12, 12),
-                    cull(DOWN | WEST | NORTH)
-            );
+        for (Direction direction : Iterate.directions) {
+            if (!sides.get(direction))
+                continue;
+            if (direction.getAxis().isVertical()) {
+                context.assemblePiece(
+                        t -> t.flipY(direction == Direction.UP),
+                        vec3(0, 0, 0),
+                        aabb(16, 1, 16),
+                        cull((NORTH * i(sides.get(Direction.NORTH))) |
+                                (SOUTH * i(sides.get(Direction.SOUTH))) |
+                                (EAST * i(sides.get(Direction.EAST))) |
+                                (WEST * i(sides.get(Direction.WEST)))
+                        )
+                );
+            } else {
+                Direction right = direction.getClockWise();
+                Direction left = direction.getCounterClockWise();
+                context.assemblePiece(
+                        t -> t.rotateY((int) direction.toYRot() + 180),
+                        vec3(0, 0, 0),
+                        aabb(16, 16, 1),
+                        cull((UP * i(sides.get(Direction.UP))) |
+                                (DOWN * i(sides.get(Direction.DOWN))) |
+                                (EAST * i(sides.get(right))) |
+                                (WEST * i(sides.get(left)))
+                        )
+                );
+            }
         }
     }
 }
